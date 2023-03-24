@@ -1,51 +1,6 @@
-<!doctype html>
-<!-- Desenvolvido por Guilherme Albuquerque 2023 -->
-<html lang="pt">
-<head>
-	<!-- Coisas básicas -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="icon" type="image/png" href="/favicon.png"/>
-	<meta property="og:site_name" content="conversa - drena"/>
-	<title>conversa Beta</title>
-    <meta name="theme-color" content="#111111"/>
-	<!-- jQuery, jQuery form, JS Cookie -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha384-qlmct0AOBiA2VPZkMY3+2WqkHtIQ9lSdAsAn5RUJD/3vA5MKDgSGcdmIv4ycVxyn" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js"></script>
-	<!-- DateJS -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js" integrity="sha512-/n/dTQBO8lHzqqgAQvy0ukBQ0qLmGzxKhn8xKrz4cn7XJkZzy+fAtzjnOQd5w55h4k1kUC+8oIe6WmrGUYwODA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<!-- Bootstrap -->
-	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-	<link rel="stylesheet" type="text/css" href="https://testes.altadrena.com/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <!-- Socket -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-	<script>
-		if(!('ontouchstart' in window)){
-			$(function (){ $('[data-toggle="tooltip"]').tooltip() })
-		}
-	</script>
-
-    <style>
-        @font-face{font-family:"MADE TOMMY Regular";src:url("/fontes/MADE TOMMY Regular.otf")}
-        @font-face{font-family:"MADE TOMMY Bold";src:url("/fontes/MADE TOMMY Bold.otf")}
-        @font-face{font-family:"MADE TOMMY Bold Outline";src:url("/fontes/MADE TOMMY Bold Outline.otf")}
-        @font-face{font-family:"SourceSansPro";src:url("/fontes/SourceSansPro.ttf")}
-    </style>
-    <style>
-        body{
-            background-image: linear-gradient(-90deg,rgb(0,0,0),rgb(12, 0, 53),rgb(12, 0, 53),rgb(0,0,0));
-        }
-        small{
-            font-size: 13px;
-            color: #d4c7ff;
-        }
-    </style>
+<?php require('head.php');?>
 </head>
 <body>
-
 
 <div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-4 bg-conversa bg-opacity-10 vh-100">
 
@@ -59,7 +14,7 @@ if ($_GET["id"]){
             <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
         </section>
     
-        <div id="conversa" class="mh-100 overflow-visible">
+        <div id="conversa" style="max-height:75vh;" class="overflow-auto d-block">
         </div>
     
         <form id="form_mensagem" class="position-absolute bottom-0 start-50 translate-middle-x">
@@ -144,93 +99,16 @@ $mensagem = '
 </div>
 ';
 
+$mensagem2 = '
+<div class="d-flex flex-row">
+    <img src="`+fpe[f_user]+`" class="mt-4 me-2 rounded-circle" height="32">
+    <span class="col" id="`+f_id+`">
+        <small>`+f_user+`</small><br>
+        <text>`+f_msg+`</text><br>
+    </span>
+</div>
+';
 ?>
-
-<script>
-//Função decodificadora do token
-function decodeJWT(token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-            atob(base64)
-            .split('')
-            .map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            })
-            .join('')
-        );
-        return JSON.parse(jsonPayload);
-}
-//TOKEN
-token = Cookies.get('drena_token');
-if (token){
-    uti = decodeJWT(token).sub;
-} else {
-    window.location.replace("https://drena.pt/entrar");
-}
-uti = decodeJWT(Cookies.get('drena_token')).sub;
-//Função ligação à API
-function api(api_url, api_data, api_token=false) {
-    var err;
-    var jqXHR = $.ajax({
-        url: api_url,
-        method: 'post',
-        data: api_data,
-        processData: true,
-        async: false,
-        beforeSend: function(xhr) {
-            if (api_token==true){
-                xhr.setRequestHeader ('Authorization', Cookies.get('drena_token'));
-            }
-        },
-        error: function (jqXHR, exception) {
-            if (jqXHR.status === 0) {
-                err = 'Not connect. Verify Network.';
-            } else if (exception === 'parsererror') {
-                err = 'Requested JSON parse failed.';
-            } else if (exception === 'timeout') {
-                err = 'Time out error.';
-            } else if (exception === 'abort') {
-                err = 'Ajax request aborted.';
-            } else {
-                err = 'Uncaught Error.' + jqXHR.responseText;
-            }
-            if (err){console.error(err);}
-        }
-    });
-    var result = JSON.parse(jqXHR.responseText);
-    if (err){
-        return "error";
-    } else {
-        return result;
-    }
-}
-//Função para obter o tempo passado
-function tempoPassado(isoDate) {
-    const date = new Date(isoDate);
-    const now = new Date();
-    const timePassed = now - date;
-    const seconds = Math.floor(timePassed / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = now.getMonth() - date.getMonth() + (12 * (now.getFullYear() - date.getFullYear()));
-    const years = Math.floor(months / 12);
-    if (years > 0) {
-        return `Há ${years} ${years === 1 ? 'ano' : 'anos'}`;
-    } else if (months > 0) {
-        return `Há ${months} ${months === 1 ? 'mês' : 'meses'}`;
-    } else if (days > 0) {
-        return `Há ${days} ${days === 1 ? 'dia' : 'dias'}`;
-    } else if (hours > 0) {
-        return `Há ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
-    } else if (minutes > 0) {
-        return `Há ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
-    } else {
-        return `Há ${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`;
-    }
-}
-</script>
 
 <?php
 if ($_GET["id"]){
@@ -266,42 +144,14 @@ if ($_GET["id"]){
             if (err){console.error(err);}
         }
     });
-}
-function criar_chat(pessoa){
-    $.ajax({
-        url: 'https://conversa.drena.pt:3000/startChat',
-        type: 'post',
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify({'receivers': [pessoa],'text': 'Olá!'}),
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader ('Authorization', Cookies.get('drena_token'));
-        },
-        success: function (data) {
-            console.debug(data);
-        },
-        error: function (jqXHR, exception) {
-            if (jqXHR.status === 0) {
-                err = 'Not connect. Verify Network.';
-            } else if (exception === 'parsererror') {
-                err = 'Requested JSON parse failed.';
-            } else if (exception === 'timeout') {
-                err = 'Time out error.';
-            } else if (exception === 'abort') {
-                err = 'Ajax request aborted.';
-            } else {
-                err = 'Uncaught Error.' + jqXHR.responseText;
-            }
-            if (err){console.error(err);}
-        }
-    });
-}
-*/
-//criar_chat();
+} */
+
+
+//startChat = api('https://conversa.drena.pt:3000/startChat', JSON.stringify({'receivers': ['Devas','phi19','Leonor'],'text': 'Olá!'}), true, 'application/json');
 
 
 //Obter conversas
-conversas = api('https://conversa.drena.pt:3000/getChatsByUser', null, true);
+conversas = api('https://conversa.drena.pt:3000/getChat', null, true);
 $("#carregando").addClass("d-none");
 if (conversas=="error"){
     $("#erro_offline").removeClass("d-none");
@@ -328,7 +178,7 @@ if (conversas=="error"){
                 nome_grupo += ", "+user.username;
             });
             nome_conversa = nome_grupo;
-            img_conversa = "/grupo.jpg";
+            img_conversa = "/img/grupo.jpg";
             mensagem = d.lastMessages[0].content;
             if (d.lastMessages[0].username==uti){
                 mensagem = "<small>Eu: </small>"+mensagem;
@@ -353,12 +203,19 @@ if (!$_GET["id"]){
 }
 ?>
 <script>
+    chatID = '<?php echo $_GET['id'];?>';
     const socket = io('https://conversa.drena.pt:3000');
 
     socket.on('connect', () => {
-        socket.emit('enterChat', {'id': '<?php echo $_GET['id'];?>', 'token': token});
-        console.debug('Connected to server');
+        socket.emit('enterChat', {'id': chatID, 'token': token});
         $("#erro_offline").addClass("d-none");
+        console.debug('Connected to server');
+
+        ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
+        console.debug(ultimas_mensagens);
+        $.each(ultimas_mensagens.reverse(), function (k, d) {
+            renderizarMensagem(d.id,d.content,d.username);
+        });
     });
 
     socket.on('getMessages', (data) => {
@@ -373,23 +230,29 @@ if (!$_GET["id"]){
     var ultimo_uti;
     var ultimo_id;
     var fpe = [];
+    function renderizarMensagem(f_id,f_msg,f_user){
+        if (!fpe[f_user]){
+            api_response = api('https://drena.pt/api/uti', {'uti': f_user});
+            fpe[f_user] = api_response.fpe;
+        }
+        if (f_user==uti.nut){
+            $('#conversa').append("<div id='"+f_id+"' class='text-end'>"+f_msg+"<b><div>");
+        } else {
+            if (ultimo_uti==f_user){
+                $('#'+ultimo_id).append(`<text>`+f_msg+`</text><br>`);
+            } else {
+                $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem2); ?>`);
+                ultimo_id = f_id;
+            }
+        }
+        ultimo_uti = f_user;
+    }
+    
 
     socket.on('message', (data) => {
         console.log('message:', data);
 
-        if (!fpe[data.username]){
-            res_api = api('https://drena.pt/api/uti', {'uti': data.username});
-            fpe[data.username] = res_api.fpe;
-        }
-
-        if (ultimo_uti==data.username){
-            $('#'+ultimo_id).append(`<text>`+data.content+`</text><br>`);
-        } else {
-            $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem); ?>`);
-            ultimo_id = data.id;
-        }
-
-        ultimo_uti = data.username;
+        renderizarMensagem(data.id,data.content,data.username);
     });
 
     $('#form_mensagem').on('submit', function(e) {
