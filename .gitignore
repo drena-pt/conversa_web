@@ -1,0 +1,7 @@
+# VSCode
+.vscode-test
+.vscode
+
+# Composer
+composer.phar
+/vendor/
