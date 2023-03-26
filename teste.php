@@ -1,38 +1,71 @@
 <?php require('head.php');?>
+    <style>
+    .msg_container_base{
+        max-height:80vh;
+        height:80vh;
+        overflow-x:hidden;
+    }
+    </style>
 </head>
 <body>
 
 <div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-4 bg-conversa bg-opacity-10 vh-100">
 
-    <div class='row'>
-        <h1>conversa</h1>
 
-        <section id="erro_offline" class="w-50 mx-auto alert text-center bg-opacity-10 bg-vermelho border-vermelho">
-            <text><i class="bi bi-exclamation-triangle"></i> O sistema está offline</text>
-        </section>
+    <div class="panel panel-primary" style="border:0px">
 
-        <!-- <section id="carregando" class="text-center p-4">
-            <div class="spinner-border" role="status">
-                <span class="sr-only"></span>
+        <div class="panel-heading top-bar">
+            <div class="col-md-8 col-xs-8">
+                <h3 class="panel-title"><span class="glyphicon glyphicon-comment" style="margin-right:6px;"></span>College Enquiry Chat</h3>
             </div>
-        </section> -->
-        
-        <a href="#" class="text-light text-decoration-none">
-            <div class="d-flex flex-row my-2">
-                <img src="https://media.drena.pt/fpe/RUiFOcCk.jpg" class="mt-1 me-2 rounded-circle" height="64">
-                <span class="col">
-                    <text class="h4">guilhae</text><br>
-                    Olá amiiiggooo ahaha<br>
-                    <small>há 15 horas</small>
-                    
+        </div>
+
+        <div class="msg_container_base">
+
+            <div class="row msg_container base_sent">
+                <div class="col-md-10 col-xs-10">
+                    <div class="messages msg_sent">
+                        <p>that mongodb thing looks good, huh?
+                        tiny master db, and huge document store</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row msg_container base_receive">
+                <div class="col-md-10 col-xs-10">
+                    <div class="messages msg_receive">
+                        <p>that mongodb thing looks good, huh?
+                        tiny master db, and huge document store</p>
+                    </div>
+                </div>
+            </div>
+
+            <chat_log> . </chat_log>
+
+        </div>
+
+        <!--CHAT USER BOX-->
+        <div class="panel-footer">
+            <div class="input-group" id="myForm">
+                <input id="btn-input" type="text" class="form-control input-sm chat_input" placeholder="Write your message here...">
+                <span class="input-group-btn">
+                <button class="btn btn-primary btn-sm" id="submit" type="submit">Send</button>
                 </span>
+            </form>
             </div>
-        </a>
+        </div>
 
     </div>
 
+        
 </div>
 
 
+<script>
+        
+$("#submit").click(function() {
+    $(".msg_container_base").stop().animate({ scrollTop: $(".msg_container_base")[0].scrollHeight}, 0);
+});
+    </script>
 </body>
 </html>

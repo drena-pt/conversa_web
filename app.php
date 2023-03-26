@@ -1,4 +1,11 @@
 <?php require('head.php');?>
+    <style>
+    #conversa{
+        max-height:76vh;
+        height:76vh;
+        overflow-x:hidden;
+    }
+    </style>
 </head>
 <body>
 
@@ -14,7 +21,8 @@ if ($_GET["id"]){
             <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
         </section>
     
-        <div id="conversa" style="max-height:75vh;" class="overflow-auto d-block">
+        <div id="conversa">
+
         </div>
     
         <form id="form_mensagem" class="position-absolute bottom-0 start-50 translate-middle-x">
@@ -203,33 +211,11 @@ if (!$_GET["id"]){
 }
 ?>
 <script>
-    chatID = '<?php echo $_GET['id'];?>';
-    const socket = io('https://conversa.drena.pt:3000');
-
-    socket.on('connect', () => {
-        socket.emit('enterChat', {'id': chatID, 'token': token});
-        $("#erro_offline").addClass("d-none");
-        console.debug('Connected to server');
-
-        ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
-        console.debug(ultimas_mensagens);
-        $.each(ultimas_mensagens.reverse(), function (k, d) {
-            renderizarMensagem(d.id,d.content,d.username);
-        });
-    });
-
-    socket.on('getMessages', (data) => {
-        console.log('getMessages:', data);
-    });
-
-    socket.on('disconnect', () => {
-        $("#erro_offline").removeClass("d-none");
-        console.debug('Disconnected to server');
-    });
-
+    // FUNÇÕES (Início)
     var ultimo_uti;
     var ultimo_id;
     var fpe = [];
+
     function renderizarMensagem(f_id,f_msg,f_user){
         if (!fpe[f_user]){
             api_response = api('https://drena.pt/api/uti', {'uti': f_user});
@@ -247,12 +233,39 @@ if (!$_GET["id"]){
         }
         ultimo_uti = f_user;
     }
-    
+
+    function irParaBaixo(){
+        $("#conversa").stop().animate({ scrollTop: $("#conversa")[0].scrollHeight}, 0);
+    }
+    // FUNÇÕES (Fim)
+
+
+    chatID = '<?php echo $_GET['id'];?>';
+    const socket = io('https://conversa.drena.pt:3000');
+
+    socket.on('connect', () => {
+        socket.emit('enterChat', {'id': chatID, 'token': token});
+        $("#erro_offline").addClass("d-none");
+        console.debug('Connected to server');
+
+        ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
+        console.debug(ultimas_mensagens);
+        $.each(ultimas_mensagens.reverse(), function (k, d) {
+            renderizarMensagem(d.id,d.content,d.username);
+        });
+        irParaBaixo()
+    });
+
+    socket.on('disconnect', () => {
+        $("#erro_offline").removeClass("d-none");
+        console.debug('Disconnected to server');
+    });
 
     socket.on('message', (data) => {
         console.log('message:', data);
 
         renderizarMensagem(data.id,data.content,data.username);
+        irParaBaixo()
     });
 
     $('#form_mensagem').on('submit', function(e) {
@@ -266,6 +279,8 @@ if (!$_GET["id"]){
         $("#conversa").append("<div class='text-end'>"+mensagem+"<b><div>");
 
 		$('#input_mensagem').val('');
+
+        irParaBaixo()
 	});
 </script>
 <?php
