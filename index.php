@@ -20,20 +20,23 @@
         </nav>
     </header>
 		
-    <div class="bg-dark jumbotron1 overflow-hidden d-flex justify-content-start align-items-center">
-        <div class='row p-0 py-3 col-xl-6 offset-xl-3'>
-            <div class='col-6 p-4 p-xl-0 d-flex justify-content-start align-items-center'>
-                <div>
+    <div class="jumbotron1 d-flex justify-content-center align-items-center">
+
+        <div class='row col-xl-6 p-xl-0 p-4'>
+            <div class='col-xl-6 row'>
+                <div class="col-7 col-xl-12">
                     <text>Conversa <span class="badge badge-pill bg-light text-dark">Beta</span></text>
-                    <h1 class='display-4 '>
+                    <h1 class="display-4">
                         Junta-te à<br>
                         conversa<br>
-                    </h1>
-                    <br><a href='/app' role='button' class='btn btn-conversa'>Entrar <i class="bi bi-arrow-right-circle"></i></a>
+                    </h1><br>
+                </div>
+                <div class="col-5 p-0 col-xl-12 d-flex justify-content-xl-start justify-content-end align-items-center">
+                    <a href='/app' role='button' class='btn btn-conversa'>Entrar <i class="bi bi-arrow-right-circle"></i></a>
                 </div>
             </div>
-            <div class='col-6'>
-                <div class="bg-primary bg-gradient rounded-xl shadow p-5 text-light my-4">
+            <div class='col-xl-6 col-12 d-flex align-items-center'>
+                <div class="bg-primary bg-gradient rounded-xl shadow text-light p-4 w-100">
                     <div class="d-flex justify-content-between align-items-center my-2">
                         <div class="d-flex flex-row">
                             <img id="img_uti_fpe" class="me-3 rounded-circle" height="64">
@@ -43,7 +46,7 @@
                             </span>
                         </div>
                         <a href="https://drena.pt/definicoes">
-                            <i class="bi bi-arrow-right-circle h5 text-light"></i>
+                            <i class="bi bi-gear h5 text-light"></i>
                         </a>
                     </div>
                     <!-- <a class="float-sm-end btn btn-light" href='https://drena.pt/pro/sair'>Terminar sessão <i class="bi bi-box-arrow-right"></i></a> -->
@@ -57,14 +60,15 @@
                 </script>
             </div>
         </div>
+
     </div>
 
     <div id='sobre' class="bg-conversa jumbotron2">
-        <div class='row p-0 py-3 col-xl-6 offset-xl-3'>
-            <div class='col-6'>
-                <img style='height:100vh' src="/img/telemovel.png">
+        <div class='row px-xl-0 p-4 col-xl-6 offset-xl-3'>
+            <div class='col-xl-6 col-12 pb-2 p-0 text-center'>
+                <img style='height:80vh' src="/img/telemovel.png">
             </div>
-            <div class='col-6 d-flex justify-content-start align-items-center'>
+            <div class='col-xl-6 col-12 row d-flex justify-content-start align-items-center'>
                 <div>
                     <h1 class='display-4'>
                         <span class='text-outline'>A forma mais </span>drena
