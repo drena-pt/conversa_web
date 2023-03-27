@@ -30,9 +30,13 @@
 
 <audio id="notification_sound"><source src='sounds/sons_mod1.mp3'></audio>
 
-<section id="erro_offline" class="w-50 mx-auto alert text-center bg-opacity-10 bg-vermelho border-vermelho d-none">
-        <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
-</section>
+<div id="erro_offline" class="position-absolute w-100 h-100 bg-opacity-75 bg-dark d-none" style="z-index: 10;">
+    <section class="position-absolute top-50 start-50 translate-middle alert bg-opacity-75 bg-dark border-vermelho p-0">
+        <div class="alert text-center bg-opacity-10 bg-vermelho m-0 px-5">
+            <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
+        </div>
+    </section>
+</div>
 
 <div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-0 bg-conversa bg-opacity-10 vh-100">
 
@@ -42,9 +46,9 @@ if ($_GET["id"]){
     
     <div class="d-flex flex-row p-3 align-items-center bg-opacity-25 bg-dark">
         <a href="/app" class="text-light"><i class="h4 bi bi-arrow-left"></i></a>
-        <img src="/img/grupo.jpg" class="mt-1 me-2 rounded-circle" height="64">
-        <span class="col"><h3 class="mt-1 mb-0">Eu, Devas, phi19</h3>
-        <small>phi19 está a escrever...</small></span>
+        <img id="conversa_icon" class="mt-1 me-2 rounded-circle" height="64">
+        <span class="col"><h3 id="conversa_title" class="mt-1 mb-0"></h3>
+        <small> </small></span>
     </div>
     
     <section class="pe-2">
@@ -240,11 +244,12 @@ if (!$_GET["id"]){
     var ultimo_id;
     var fpe = [];
 
+    function carregar_fpe(f_user){
+        api_res = api('https://drena.pt/api/uti', {'uti': f_user});
+        fpe[f_user] = api_res.fpe;
+    }
+
     function renderizarMensagem(f_id,f_msg,f_user){
-        if (!fpe[f_user]){
-            api_response = api('https://drena.pt/api/uti', {'uti': f_user});
-            fpe[f_user] = api_response.fpe;
-        }
         if (f_user==uti.nut){
             $('#conversa').append("<div id='"+f_id+"' class='text-end'>"+f_msg+"<b><div>");
         } else {
@@ -273,7 +278,35 @@ if (!$_GET["id"]){
         console.debug('Connected to server');
 
         ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
+        console.debug("Ultimas mensagens:");
         console.debug(ultimas_mensagens);
+
+        
+        conversa_info = api('https://conversa.drena.pt:3000/getChat', JSON.stringify({"chatId": chatID}), true, 'application/json');
+        conversa_info = conversa_info[0];
+        console.debug("Info da conversa:");
+        console.debug(conversa_info);
+
+        //Carrega as fotos de utilizador
+        $.each(conversa_info.users, function (k, d) {
+            carregar_fpe(d.username);
+        });
+
+        //Escolhe o icon e o nome da conversa
+        if (conversa_info.type=="DIRECT_MESSAGE"){
+            conversa_title = conversa_info.users[0].username;
+            conversa_icon = fpe[conversa_info.users[0].username];
+        } else {
+            conversa_title = "Eu";
+            $.each(conversa_info.users, function (k, d) {
+                conversa_title += ", "+d.username;
+            });
+            conversa_icon = "/img/grupo.jpg";
+        }
+        $("#conversa_title").html(conversa_title);
+        $("#conversa_icon").attr("src", conversa_icon);
+
+        //Renderiza as mensagens
         $.each(ultimas_mensagens.reverse(), function (k, d) {
             renderizarMensagem(d.id,d.content,d.username);
         });
