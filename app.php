@@ -1,30 +1,57 @@
 <?php require('head.php');?>
     <style>
     #conversa{
-        max-height:76vh;
-        height:76vh;
+        max-height: calc(100vh - 200px);
+        height: calc(100vh - 200px);
         overflow-x:hidden;
     }
+
+    /* Scrollbar */
+    #conversa::-webkit-scrollbar {
+        width: 6px;
+    }
+    #conversa::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #conversa::-webkit-scrollbar-thumb {
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        border: none;
+    }
     </style>
+    <script>
+        function Som(){
+            var audio = document.getElementById("notification_sound");
+            audio.play();
+        }
+    </script>
 </head>
 <body>
 
-<div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-4 bg-conversa bg-opacity-10 vh-100">
+<audio id="notification_sound"><source src='sounds/sons_mod1.mp3'></audio>
+
+<section id="erro_offline" class="w-50 mx-auto alert text-center bg-opacity-10 bg-vermelho border-vermelho d-none">
+        <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
+</section>
+
+<div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-0 bg-conversa bg-opacity-10 vh-100">
 
 <?php
 if ($_GET["id"]){
     echo '
-    <div class="row">
-        <h1><a href="/app" class="text-light"><i class="h4 bi bi-arrow-left"></i></a> conversa</h1>
     
-        <section id="erro_offline" class="w-50 mx-auto alert text-center bg-opacity-10 bg-vermelho border-vermelho d-none">
-            <text><i class="h4 bi bi-exclamation-triangle"></i><br>Estás disconectado</text>
-        </section>
+    <div class="d-flex flex-row p-3 align-items-center bg-opacity-25 bg-dark">
+        <a href="/app" class="text-light"><i class="h4 bi bi-arrow-left"></i></a>
+        <img src="/img/grupo.jpg" class="mt-1 me-2 rounded-circle" height="64">
+        <span class="col"><h3 class="mt-1 mb-0">Eu, Devas, phi19</h3>
+        <small>phi19 está a escrever...</small></span>
+    </div>
     
-        <div id="conversa">
-
-        </div>
+    <section class="pe-2">
+        <div id="conversa" class="p-4"></div>
+    </section>
     
+    <section class="row">
         <form id="form_mensagem" class="position-absolute bottom-0 start-50 translate-middle-x">
             <div class="d-flex p-3 col-xl-6 offset-xl-3">
                 <div class="flex-grow-1 me-2">
@@ -35,17 +62,13 @@ if ($_GET["id"]){
                 </div>
             </div>
         <form>
+    </section>
 
-    </div>
     ';
 } else {
     echo "
-    <div class='row'>
+    <div class='p-4'>
         <h1>as tuas conversas</h1>
-
-        <section id='erro_offline' class='w-50 mx-auto alert text-center bg-opacity-10 bg-vermelho border-vermelho d-none'>
-            <text><i class='h4 bi bi-exclamation-triangle'></i><br>O sistema está offline</text>
-        </section>
 
         <section id='carregando' class='text-center p-4'>
             <div class='spinner-border' role='status'>
@@ -159,7 +182,8 @@ if ($_GET["id"]){
 
 
 //Obter conversas
-conversas = api('https://conversa.drena.pt:3000/getChat', null, true);
+conversas = api('https://conversa.drena.pt:3000/getChat', null, true, null);
+
 $("#carregando").addClass("d-none");
 if (conversas=="error"){
     $("#erro_offline").removeClass("d-none");
@@ -266,6 +290,7 @@ if (!$_GET["id"]){
 
         renderizarMensagem(data.id,data.content,data.username);
         irParaBaixo()
+        Som()
     });
 
     $('#form_mensagem').on('submit', function(e) {
