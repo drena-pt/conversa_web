@@ -63,6 +63,7 @@
 			url: api_url,
 			method: 'post',
 			contentType: api_contentType,
+    		dataType: "json",
 			data: api_data,
 			processData: true,
 			async: false,

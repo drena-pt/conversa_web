@@ -28,7 +28,7 @@
 </head>
 <body>
 
-<audio id="notification_sound"><source src='sounds/sons_mod1.mp3'></audio>
+<audio id="notification_sound"><source src='sounds/sons.wav'></audio>
 
 <div id="erro_offline" class="position-absolute w-100 h-100 bg-opacity-75 bg-dark d-none" style="z-index: 10;">
     <section class="position-absolute top-50 start-50 translate-middle alert bg-opacity-75 bg-dark border-vermelho p-0">
@@ -44,6 +44,10 @@
 if ($_GET["id"]){
     echo '
     
+    <div id="loading" class="position-absolute top-50 start-50 translate-middle">
+        <div class="spinner-border text-secondary" role="status"></div>
+    </div>
+
     <div class="d-flex flex-row p-3 align-items-center bg-opacity-25 bg-dark">
         <a href="/app" class="text-light"><i class="h4 bi bi-arrow-left"></i></a>
         <img id="conversa_icon" class="mt-1 me-2 rounded-circle" height="64">
@@ -124,25 +128,18 @@ if ($_GET["id"]){
 
 <?php
 
-$mensagem = '
-<div class="d-flex flex-row">
-    <img src="`+fpe[data.username]+`" class="mt-4 me-2 rounded-circle" height="32">
-    <span class="col" id="`+data.id+`">
-        <small>`+data.username+`</small><br>
-        <text>`+data.content+`</text><br>
-    </span>
-</div>
-';
-
-$mensagem2 = '
-<div class="d-flex flex-row">
-    <img src="`+fpe[f_user]+`" class="mt-4 me-2 rounded-circle" height="32">
+$mensagem_b = '
+<div class="d-flex flex-row my-3">
+    <img src="`+fpe[f_user]+`" class="mt-2 me-2 rounded-circle" height="32">
     <span class="col" id="`+f_id+`">
-        <small>`+f_user+`</small><br>
+        <small><span class="text-light">`+f_hour+` — </span>`+f_user+`</small><br>
         <text>`+f_msg+`</text><br>
     </span>
 </div>
 ';
+
+$mensagem_a = '';
+
 ?>
 
 <?php
@@ -192,6 +189,7 @@ $("#carregando").addClass("d-none");
 if (conversas=="error"){
     $("#erro_offline").removeClass("d-none");
 } else {
+    console.debug("Conversas:");
     console.debug(conversas);
     //Ordena a array por data da última mensagem em cada conversa
     conversas.sort((a, b) => {
@@ -199,11 +197,28 @@ if (conversas=="error"){
         const bDate = new Date(b.lastMessages[0].date);
         return bDate - aDate;
     });
+
+    //Carregar utilizadores
+    var lista_utis = [];
+    var utis = [];
     $.each(conversas, function (k, d) {
         if (d.type=="DIRECT_MESSAGE"){
-            res_api = api('https://drena.pt/api/uti', {'uti': d.users[0].username});
+            lista_utis.push(d.users[0].username);
+        }
+    });
+    console.debug("Lista de utilizadores:");
+    console.debug(lista_utis);
+    $.each( api('https://drena.pt/api/uti', {'utis': JSON.stringify(lista_utis)}) , function (k, d) {
+        utis[d.nut] = {'nco':d.nco,'fpe':d.fpe,'dcr':d.dcr};
+    });
+    console.debug("Utilizadores:");
+    console.debug(utis);
+
+
+    $.each(conversas, function (k, d) {
+        if (d.type=="DIRECT_MESSAGE"){
             nome_conversa = d.users[0].username;
-            img_conversa = res_api.fpe;
+            img_conversa = utis[d.users[0].username].fpe;
             mensagem = d.lastMessages[0].content;
             if (d.lastMessages[0].username==uti){
                 mensagem = "<small>Eu: </small>"+mensagem;
@@ -249,16 +264,20 @@ if (!$_GET["id"]){
         fpe[f_user] = api_res.fpe;
     }
 
-    function renderizarMensagem(f_id,f_msg,f_user){
-        if (f_user==uti.nut){
-            $('#conversa').append("<div id='"+f_id+"' class='text-end'>"+f_msg+"<b><div>");
+    function renderizarMensagem(f_id,f_msg,f_user,f_date){
+        if (f_date){
+            f_hour = new Date(f_date).toString("HH:mm");
+        }
+
+        if (ultimo_uti==f_user){
+            $('#'+ultimo_id).append(`<text>`+f_msg+`</text><br>`);
         } else {
-            if (ultimo_uti==f_user){
-                $('#'+ultimo_id).append(`<text>`+f_msg+`</text><br>`);
+            if (f_user==uti.nut){
+                $('#conversa').append("<div id='"+f_id+"' class='text-end'><small class='text-light'>"+f_hour+"</small><br>"+f_msg+"<div>");
             } else {
-                $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem2); ?>`);
-                ultimo_id = f_id;
+                $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem_b); ?>`);
             }
+            ultimo_id = f_id;
         }
         ultimo_uti = f_user;
     }
@@ -280,7 +299,6 @@ if (!$_GET["id"]){
         ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
         console.debug("Ultimas mensagens:");
         console.debug(ultimas_mensagens);
-
         
         conversa_info = api('https://conversa.drena.pt:3000/getChat', JSON.stringify({"chatId": chatID}), true, 'application/json');
         conversa_info = conversa_info[0];
@@ -308,9 +326,12 @@ if (!$_GET["id"]){
 
         //Renderiza as mensagens
         $.each(ultimas_mensagens.reverse(), function (k, d) {
-            renderizarMensagem(d.id,d.content,d.username);
+            renderizarMensagem(d.id,d.content,d.username,d.date);
         });
-        irParaBaixo()
+        irParaBaixo();
+
+        //Esconde o loading
+        $("#loading").addClass("d-none");
     });
 
     socket.on('disconnect', () => {
@@ -321,7 +342,7 @@ if (!$_GET["id"]){
     socket.on('message', (data) => {
         console.log('message:', data);
 
-        renderizarMensagem(data.id,data.content,data.username);
+        renderizarMensagem(data.id,data.content,data.username,data.date);
         irParaBaixo()
         Som()
     });
