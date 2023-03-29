@@ -139,7 +139,7 @@ if ($_GET["id"]){
 
 $mensagem_b = '
 <div class="conversa_b d-inline-flex my-3 px-3 py-1 bg-opacity-10 rounded-end bg-light">
-    <img src="`+fpe[f_user]+`" class="mt-2 me-2 rounded-circle" height="32">
+    <img src="`+utis[f_user].fpe+`" class="mt-2 me-2 rounded-circle" height="32">
     <span class="col pe-4 pb-1" id="`+f_id+`">
         <small><span class="text-light">`+f_hour+` — </span>`+f_user+`</small><br>
         <text>`+f_msg+`</text>
@@ -271,18 +271,30 @@ if (!$_GET["id"]){
     // FUNÇÕES (Início)
     var ultimo_uti;
     var ultimo_id;
-    var fpe = [];
+    var lista_utis = [];
+    var utis = [];
 
-    function carregar_fpe(f_user){
-        api_res = api('https://drena.pt/api/uti', {'uti': f_user});
-        fpe[f_user] = api_res.fpe;
+    function carregar_utis(conversa){
+        $.each(conversa.users, function (k, d) {
+            lista_utis.push(d.username);
+        });
+        console.debug("Lista de utilizadores:");
+        console.debug(lista_utis);
+        $.each( api('https://drena.pt/api/uti', {'utis': JSON.stringify(lista_utis)}) , function (k, d) {
+            utis[d.nut] = {'nco':d.nco,'fpe':d.fpe,'dcr':d.dcr};
+        });
+        console.debug("Utilizadores:");
+        console.debug(utis);
     }
 
     function renderizarMensagem(f_id,f_msg,f_user,f_date){
+        console.log({f_id, f_msg, f_user, f_date});
+
         if (f_date){
             f_hour = new Date(f_date).toString("HH:mm");
         }
 
+        console.log(ultimo_uti);
         if (ultimo_uti==f_user){
             $('#'+ultimo_id).append(`<br><text>`+f_msg+`</text>`);
         } else {
@@ -306,8 +318,10 @@ if (!$_GET["id"]){
     const socket = io('https://conversa.drena.pt:3000');
 
     socket.on('connect', () => {
-        socket.emit('enterChat', {'id': chatID, 'token': token});
         $("#erro_offline").addClass("d-none");
+        $("#conversa").html("");
+
+        socket.emit('enterChat', {'id': chatID, 'token': token});
         console.debug('Connected to server');
 
         ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
@@ -319,15 +333,13 @@ if (!$_GET["id"]){
         console.debug("Info da conversa:");
         console.debug(conversa_info);
 
-        //Carrega as fotos de utilizador
-        $.each(conversa_info.users, function (k, d) {
-            carregar_fpe(d.username);
-        });
+        //Carrega informações dos utilizadores da conversa (fpe essencialmente)
+        carregar_utis(conversa_info);
 
         //Escolhe o icon e o nome da conversa
         if (conversa_info.type=="DIRECT_MESSAGE"){
             conversa_title = conversa_info.users[0].username;
-            conversa_icon = fpe[conversa_info.users[0].username];
+            conversa_icon = utis[conversa_info.users[0].username].fpe;
         } else {
             conversa_title = "Eu";
             $.each(conversa_info.users, function (k, d) {
@@ -354,8 +366,6 @@ if (!$_GET["id"]){
     });
 
     socket.on('message', (data) => {
-        console.log('message:', data);
-
         renderizarMensagem(data.id,data.content,data.username,data.date);
         irParaBaixo()
         Som()
@@ -367,9 +377,7 @@ if (!$_GET["id"]){
 
         socket.emit('message', mensagem);
 
-        ultimo_uti = null;
-
-        $("#conversa").append("<div class='text-end'>"+mensagem+"<b><div>");
+        renderizarMensagem(String(Date.now()),mensagem,uti.nut);
 
 		$('#input_mensagem').val('');
 
