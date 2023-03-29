@@ -1,9 +1,8 @@
 <?php require('head.php');?>
     <style>
     #conversa{
-        max-height: calc(100vh - 200px);
-        height: calc(100vh - 200px);
-        overflow-x:hidden;
+        max-height: 100%;
+        overflow-x: hidden;
     }
 
     /* Scrollbar */
@@ -47,7 +46,7 @@
     </section>
 </div>
 
-<div class="col-xl-6 offset-xl-3 bg-dark"><div class="p-0 bg-conversa bg-opacity-10 vh-100">
+<div class="col-xl-6 offset-xl-3 my-0 p-0 min-vh-100" style="background-color:#150f29;">
 
 <?php
 if ($_GET["id"]){
@@ -57,7 +56,7 @@ if ($_GET["id"]){
         <div class="spinner-border text-secondary" role="status"></div>
     </div>
 
-    <div class="d-flex flex-row p-3 align-items-center bg-opacity-25 bg-dark">
+    <div id="conversa_header" class="d-flex flex-row p-3 align-items-center bg-opacity-25 bg-dark">
         <a href="/app" class="text-light"><i class="h4 bi bi-arrow-left"></i></a>
         <img id="conversa_icon" class="mt-1 me-2 rounded-circle" height="64">
         <span class="col"><h3 id="conversa_title" class="mt-1 mb-0"></h3>
@@ -65,7 +64,7 @@ if ($_GET["id"]){
     </div>
     
     <section class="pe-2">
-        <div id="conversa" class="pe-4"></div>
+        <section id="conversa" class="pe-3 py-5"></section>
     </section>
     
     <section class="row">
@@ -132,7 +131,7 @@ if ($_GET["id"]){
 }
 ?>
 
-</div></div>
+</div>
 
 
 <?php
@@ -288,13 +287,12 @@ if (!$_GET["id"]){
     }
 
     function renderizarMensagem(f_id,f_msg,f_user,f_date){
-        console.log({f_id, f_msg, f_user, f_date});
+        //console.log({f_id, f_msg, f_user, f_date});
 
         if (f_date){
             f_hour = new Date(f_date).toString("HH:mm");
         }
 
-        console.log(ultimo_uti);
         if (ultimo_uti==f_user){
             $('#'+ultimo_id).append(`<br><text>`+f_msg+`</text>`);
         } else {
@@ -313,6 +311,11 @@ if (!$_GET["id"]){
     }
     // FUNÇÕES (Fim)
 
+    // Construir página
+    var header_height = $('#conversa_header').outerHeight();
+    var footer_height = $('#form_mensagem').outerHeight();
+    var remove_height = header_height+footer_height+20;
+    $('#conversa').css({'height':'calc(100vh - '+remove_height+'px)'});
 
     chatID = '<?php echo $_GET['id'];?>';
     const socket = io('https://conversa.drena.pt:3000');
