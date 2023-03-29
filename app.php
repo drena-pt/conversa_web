@@ -18,6 +18,15 @@
         border-radius: 8px;
         border: none;
     }
+
+    .rounded-end{
+        border-top-right-radius: 32px!important;
+        border-bottom-right-radius: 32px!important;
+    }
+    
+    .conversa_a, .conversa_b{
+        max-width: 75%;
+    }
     </style>
     <script>
         function Som(){
@@ -56,7 +65,7 @@ if ($_GET["id"]){
     </div>
     
     <section class="pe-2">
-        <div id="conversa" class="p-4"></div>
+        <div id="conversa" class="pe-4"></div>
     </section>
     
     <section class="row">
@@ -129,16 +138,21 @@ if ($_GET["id"]){
 <?php
 
 $mensagem_b = '
-<div class="d-flex flex-row my-3">
+<div class="conversa_b d-inline-flex my-3 px-3 py-1 bg-opacity-10 rounded-end bg-light">
     <img src="`+fpe[f_user]+`" class="mt-2 me-2 rounded-circle" height="32">
-    <span class="col" id="`+f_id+`">
+    <span class="col pe-4 pb-1" id="`+f_id+`">
         <small><span class="text-light">`+f_hour+` — </span>`+f_user+`</small><br>
-        <text>`+f_msg+`</text><br>
+        <text>`+f_msg+`</text>
     </span>
-</div>
+</div><br>
 ';
 
-$mensagem_a = '';
+$mensagem_a = "
+<div id='`+f_id+`' class='conversa_a text-end ms-auto'>
+    <small class='text-light'>`+f_hour+`</small>
+    <br><text>`+f_msg+`</text>
+</div>
+";
 
 ?>
 
@@ -270,10 +284,10 @@ if (!$_GET["id"]){
         }
 
         if (ultimo_uti==f_user){
-            $('#'+ultimo_id).append(`<text>`+f_msg+`</text><br>`);
+            $('#'+ultimo_id).append(`<br><text>`+f_msg+`</text>`);
         } else {
             if (f_user==uti.nut){
-                $('#conversa').append("<div id='"+f_id+"' class='text-end'><small class='text-light'>"+f_hour+"</small><br>"+f_msg+"<div>");
+                $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem_a); ?>`);
             } else {
                 $('#conversa').append(`<?php echo preg_replace( "/\r|\n/", "", $mensagem_b); ?>`);
             }
