@@ -258,6 +258,9 @@ if ($_GET["id"]){
 ?>
 
 
+
+
+
 <?php
 if (!$_GET["id"]){
     echo "<!--";
@@ -274,8 +277,6 @@ if (!$_GET["id"]){
         $.each(conversa.users, function (k, d) {
             lista_utis.push(d.username);
         });
-        console.debug("Lista de utilizadores:");
-        console.debug(lista_utis);
         $.each( api('https://drena.pt/api/uti', {'utis': JSON.stringify(lista_utis)}) , function (k, d) {
             utis[d.nut] = {'nco':d.nco,'fpe':d.fpe,'dcr':d.dcr};
         });
@@ -317,32 +318,40 @@ if (!$_GET["id"]){
     chatID = '<?php echo $_GET['id'];?>';
     const socket = io('https://conversa.drena.pt:3000');
 
+    //Conexão ao socket
     socket.on('connect', () => {
         $("#erro_offline").addClass("d-none");
         $("#conversa").html("");
 
         socket.emit('enterChat', {'id': chatID, 'token': token});
         console.debug('Connected to server');
+    });
 
-        ultimas_mensagens = api('https://conversa.drena.pt:3000/getMessages', JSON.stringify({"chatId": chatID}), true, 'application/json');
-        console.debug("Ultimas mensagens:");
-        console.debug(ultimas_mensagens);
-        
-        conversa_info = api('https://conversa.drena.pt:3000/getChat', JSON.stringify({"chatId": chatID}), true, 'application/json');
-        conversa_info = conversa_info[0];
+    socket.on("chatInfo", (data) => {
+        let { chatInfo } = data;
+        let { lastMessages } = chatInfo;
+
         console.debug("Info da conversa:");
-        console.debug(conversa_info);
+        console.debug(chatInfo);        
+        console.debug("Ultimas mensagens:");
+        console.debug(lastMessages);
 
         //Carrega informações dos utilizadores da conversa (fpe essencialmente)
-        carregar_utis(conversa_info);
+        carregar_utis(chatInfo);
+
+        //Renderiza as mensagens
+        $.each(lastMessages.reverse(), function (k, d) {
+            renderizarMensagem(d.id,d.content,d.username,d.date);
+        });
+        irParaBaixo();
 
         //Escolhe o icon e o nome da conversa
-        if (conversa_info.type=="DIRECT_MESSAGE"){
-            conversa_title = conversa_info.users[0].username;
-            conversa_icon = utis[conversa_info.users[0].username].fpe;
+        if (chatInfo.type=="DIRECT_MESSAGE"){
+            conversa_title = chatInfo.users[0].username;
+            conversa_icon = utis[chatInfo.users[0].username].fpe;
         } else {
             conversa_title = "Eu";
-            $.each(conversa_info.users, function (k, d) {
+            $.each(chatInfo.users, function (k, d) {
                 conversa_title += ", "+d.username;
             });
             conversa_icon = "/img/grupo.jpg";
@@ -350,14 +359,18 @@ if (!$_GET["id"]){
         $("#conversa_title").html(conversa_title);
         $("#conversa_icon").attr("src", conversa_icon);
 
-        //Renderiza as mensagens
-        $.each(ultimas_mensagens.reverse(), function (k, d) {
-            renderizarMensagem(d.id,d.content,d.username,d.date);
-        });
-        irParaBaixo();
-
         //Esconde o loading
         $("#loading").addClass("d-none");
+    });
+
+    socket.on("errorOccurred", (error) => {
+        if (error.type === "not-authenticated") {
+        } else if (error.type === "not-authorized") {
+        } else if (error.type === "empty-message") {
+        } else if (error.type === "chat-doesnt-exist") {
+        } else {
+        }
+        alert("ERRO: "+error.type+"\n"+error.message);
     });
 
     socket.on('disconnect', () => {
