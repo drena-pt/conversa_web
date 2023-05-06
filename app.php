@@ -92,14 +92,13 @@ if ($_GET["id"]){
             </div>
         </section>
 
-        <section>
-            <button onclick='alert(`Ainda não funciona :)`)' class='btn btn-conversa'>Nova conversa <i class='bi bi-chat-left-text'></i></button>
+        <button id='btn_nova_conversa' onclick='open_nova_conversa()' class='btn btn-conversa'>Nova conversa <i class='bi bi-chat-left-text'></i></button>
+        <button id='btn_fechar' onclick='close_nova_conversa()' class='btn btn-conversa' style='display:none;'>Fechar <i class='bi bi-x-lg'></i></button>
+        
+        <section id='nova_conversa' class='row row-cols-1 row-cols-md-2'>
         </section>
 
         <div id='lista_conversas'>
-        </div>
-
-        <div id='lista_utilizadores' class='row row-cols-1 row-cols-md-2'>
         </div>
 
     </div>
@@ -107,10 +106,10 @@ if ($_GET["id"]){
     
     $caixa_utilizador = '
         <div class="col pt-0 pb-2 p-1">
-            <div class="alert border-primary bg-primary bg-opacity-25 d-flex align-items-center p-1 m-0" role="alert">
+            <div class="alert bg-primary bg-opacity-25 d-flex align-items-center p-2 m-0" role="alert">
                 <a class="perfil" href="https://drena.pt/u/\'+d.nut+\'">
-                <img class="rounded-circle me-2" src="\'+d.fpe+\'" width="64">\'+d.nut+\'</a>
-                <button onclick="criar_chat(`\'+d.nut+\'`)" class="btn btn-light ms-auto m-0 me-2">Criar <i class="bi bi-chat-left-text-fill"></i></button>
+                <img class="rounded-circle me-2" src="\'+d.fpe+\'" width="38">\'+d.nut+\'</a>
+                <button onclick="criar_chat(`\'+d.nut+\'`)" class="btn bg-light bg-opacity-10 text-light ms-auto m-0">Nova <i class="bi bi-chat-left-text"></i></button>
             </div>
         </div>
     ';
@@ -162,37 +161,35 @@ if ($_GET["id"]){
 ?>
 <script>
 //LISTA CONHECIDOS
-/* if (uti){
-    $.ajax({
-        url: 'https://drena.pt/api/ob_ami',
-        type: 'post',
-        data: {"uti": uti},
-        success: function (data) {
-            console.debug(data);
-            $.each(data, function (k, d) {
-                //console.log(d.nut);
-                $('#lista_utilizadores').append('<?php echo preg_replace( "/\r|\n/", "", $caixa_utilizador); ?>');
-            })
-        },
-        error: function (jqXHR, exception) {
-            if (jqXHR.status === 0) {
-                err = 'Not connect. Verify Network.';
-            } else if (exception === 'parsererror') {
-                err = 'Requested JSON parse failed.';
-            } else if (exception === 'timeout') {
-                err = 'Time out error.';
-            } else if (exception === 'abort') {
-                err = 'Ajax request aborted.';
-            } else {
-                err = 'Uncaught Error.' + jqXHR.responseText;
-            }
-            if (err){console.error(err);}
-        }
-    });
-} */
 
+var amigos;
 
-//startChat = api('https://conversa.drena.pt:3000/startChat', JSON.stringify({'receivers': ['Devas','phi19','Leonor'],'text': 'Olá!'}), true, 'application/json');
+function criar_chat(f_uti){
+    startChat = api('https://conversa.drena.pt:3000/startChat', JSON.stringify({'receivers': [f_uti],'text': 'Olá!'}), true, 'application/json');
+    window.location.href = "?id="+startChat.id;
+}
+
+function open_nova_conversa(){
+    if (!amigos){
+        amigos = api('https://drena.pt/api/ob_ami', {"uti": uti.nut});
+        //onsole.debug(amigos);
+        $.each(amigos, function (k, d) {
+            $('#nova_conversa').append('<?php echo preg_replace( "/\r|\n/", "", $caixa_utilizador); ?>');
+        })
+        console.debug("Amigos carregados");
+    }
+    $('#btn_nova_conversa').hide();
+    $('#lista_conversas').hide();
+    $('#btn_fechar').show();
+    $('#nova_conversa').show();
+}
+
+function close_nova_conversa(){
+    $('#btn_nova_conversa').show();
+    $('#lista_conversas').show();
+    $('#btn_fechar').hide();
+    $('#nova_conversa').hide();
+}
 
 
 //Obter conversas
